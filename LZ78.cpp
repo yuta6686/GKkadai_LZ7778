@@ -20,7 +20,7 @@ struct LZ78 {				// LZ78コード
 #pragma pack()
 int g_lzcount = 0;			// 出力コード数
 
-
+// 課題やる前
 
 int main(void)
 {
