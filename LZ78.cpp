@@ -20,16 +20,13 @@ struct LZ78 {				// LZ78コード
 #pragma pack()
 int g_lzcount = 0;			// 出力コード数
 
-const char* FILE_NAME = "hal.bmp";
-const char* COMPRESSION_FILE_NAME = "hal.lz";
-const char* DECOMPRESSION_FILE_NAME = "hal_decomp.bmp";
+// ファイル名
+const char* FILE_NAME = "hal.bmp";						// 圧縮するファイル
+const char* COMPRESSION_FILE_NAME = "hal.lz";			// 圧縮したファイル
+const char* DECOMPRESSION_FILE_NAME = "hal_decomp.bmp"; // 解凍したファイル
 
 int main(void)
 {
-	//char str[] = "ABCBCBCDEBCDABCD";	//テスト用文字列
-	//int len = strlen(str);				//文字列の長さ
-	//unsigned char* data = (unsigned char*)str;//文字列を単なる1バイトデータとして扱う
-
 	FILE* file;
 	file = fopen(FILE_NAME, "rb");
 
@@ -77,8 +74,7 @@ int main(void)
 				g_dic[g_dcount].data = &data[c];
 				//データ長
 				g_dic[g_dcount].len = g_dic[i].len + 1;
-				g_dcount++;
-
+				g_dcount++;				
 
 				//処理データ位置を進める
 				c += g_dic[i].len + 1;
@@ -89,18 +85,6 @@ int main(void)
 	}
 
 
-	//printf("データ\n\t\"%s\"\n\n辞書\n", str);//辞書データの表示
-	//for (int i = 0; i < g_dcount; i++)
-	//{
-	//	printf("\t%d - %*.*s\n", i, g_dic[i].len, g_dic[i].len, g_dic[i].data);
-	//}
-
-	//printf("\nLZ78符号\n");					//符号データの表示
-	//for (int i = 0; i < g_lzcount; i++)
-	//{
-	//	printf("\t%d - %c\n", g_lz78[i].index, g_lz78[i].data);
-	//}
-
 	// 圧縮データをファイル書き込み
 	file = fopen(COMPRESSION_FILE_NAME, "wb");
 	fwrite(g_lz78, sizeof(LZ78), g_lzcount, file);
@@ -110,9 +94,7 @@ int main(void)
 
 
 	// 複号
-	// からデータを辞書登録
-
-	
+	// からデータを辞書登録	
 	if (1) {
 
 		// 圧縮データをファイル読み込み
@@ -150,7 +132,7 @@ int main(void)
 			memcpy(&orgData[c], g_dic[index].data, g_dic[index].len);
 			c += g_dic[index].len;
 
-			orgData[c] = g_lz78[i].data;
+			orgData[c] = g_lz78[i].data;			
 			c++;
 		}
 
