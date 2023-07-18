@@ -12,7 +12,7 @@ struct DIC {				// 辞書 (参照番号は添字+1とする)
 } g_dic[MAX_DIC];
 int	g_dcount = 0;			// 辞書登録数
 
-#pragma pack(1)
+#pragma pack(1) // パディング（余分データの除去をする)
 struct LZ78 {				// LZ78コード
 	unsigned int	index;	// 参照番号
 	unsigned char	data;	// データ
@@ -20,13 +20,27 @@ struct LZ78 {				// LZ78コード
 #pragma pack()
 int g_lzcount = 0;			// 出力コード数
 
-// 課題やる前
 
 int main(void)
 {
-	char str[] = "ABCBCBCDEBCDABCD";	//テスト用文字列
-	int len = strlen(str);				//文字列の長さ
-	unsigned char* data = (unsigned char*)str;//文字列を単なる1バイトデータとして扱う
+	//char str[] = "ABCBCBCDEBCDABCD";	//テスト用文字列
+	//int len = strlen(str);				//文字列の長さ
+	//unsigned char* data = (unsigned char*)str;//文字列を単なる1バイトデータとして扱う
+
+	FILE* file;
+	file = fopen("yuuki.bmp", "rb");
+
+	unsigned int len;
+	fseek(file, 0, SEEK_END);
+	len = ftell(file);
+	fseek(file, 0, SEEK_SET);
+
+	unsigned char* data;
+	data = new unsigned char[len];
+
+	fread(data, len, 1, file);
+
+	fclose(file);
 
 
 	//空データを辞書登録
@@ -72,49 +86,79 @@ int main(void)
 	}
 
 
-	printf("データ\n\t\"%s\"\n\n辞書\n", str);//辞書データの表示
-	for (int i = 0; i < g_dcount; i++)
-	{
-		printf("\t%d - %*.*s\n", i, g_dic[i].len, g_dic[i].len, g_dic[i].data);
-	}
+	//printf("データ\n\t\"%s\"\n\n辞書\n", str);//辞書データの表示
+	//for (int i = 0; i < g_dcount; i++)
+	//{
+	//	printf("\t%d - %*.*s\n", i, g_dic[i].len, g_dic[i].len, g_dic[i].data);
+	//}
 
-	printf("\nLZ78符号\n");					//符号データの表示
-	for (int i = 0; i < g_lzcount; i++)
-	{
-		printf("\t%d - %c\n", g_lz78[i].index, g_lz78[i].data);
-	}
+	//printf("\nLZ78符号\n");					//符号データの表示
+	//for (int i = 0; i < g_lzcount; i++)
+	//{
+	//	printf("\t%d - %c\n", g_lz78[i].index, g_lz78[i].data);
+	//}
+
+	// 圧縮データをファイル書き込み
+	file = fopen("yuuki.lz", "wb");
+	fwrite(g_lz78, sizeof(LZ78), g_lzcount, file);
+	fclose(file);
+
+
+
 
 	// 複号
 	// からデータを辞書登録
 
-	g_dic[0].data = (unsigned char*)"";
-	g_dic[0].len = 0;
-	g_dcount = 1;
 	
-	unsigned char orgData[256];
-	c = 0;
+	if (1) {
 
-	for (int i = 0; i < g_lzcount; i++)
-	{
-		int index = g_lz78[i].index;
+		// 圧縮データをファイル読み込み
 
-		// 辞書登録
-		g_dic[g_dcount].data = &orgData[c];
-		g_dic[g_dcount].len = g_dic[index].len + 1;
-		g_dcount++;
+		FILE* file;
+		file = fopen("yuuki.lz", "rb");
 
-		memcpy(&orgData[c], g_dic[index].data, g_dic[index].len);
-		c += g_dic[index].len;
+		unsigned int len;
 
-		orgData[c] = g_lz78[i].data;		
-		c++;
+		fseek(file, 0, SEEK_END);
+		len = ftell(file);
+		fread(g_lz78, len, 1, file);
+		fclose(file);
+
+		g_lzcount = len / sizeof(LZ78);
+
+		// 空データを辞書登録
+		g_dic[0].data = (unsigned char*)"";
+		g_dic[0].len = 0;
+		g_dcount = 1;
+
+		unsigned char* orgData;
+		orgData = new unsigned char[len * 5];
+		c = 0;
+
+		for (int i = 0; i < g_lzcount; i++)
+		{
+			int index = g_lz78[i].index;
+
+			// 辞書登録
+			g_dic[g_dcount].data = &orgData[c];
+			g_dic[g_dcount].len = g_dic[index].len + 1;
+			g_dcount++;
+
+			memcpy(&orgData[c], g_dic[index].data, g_dic[index].len);
+			c += g_dic[index].len;
+
+			orgData[c] = g_lz78[i].data;
+			c++;
+		}
+
+		orgData[c] = 0;
+
+		file = fopen("yuuki_decomp.bmp", "wb");
+		fwrite(orgData, c, 1, file);
+		fclose(file);
+
+		delete[] orgData;
 	}
-
-	orgData[c] = 0;
-
-
-
-
 
 
 	printf("\nEnterキーで終了します\n");
