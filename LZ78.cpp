@@ -20,6 +20,9 @@ struct LZ78 {				// LZ78コード
 #pragma pack()
 int g_lzcount = 0;			// 出力コード数
 
+const char* FILE_NAME = "hal.bmp";
+const char* COMPRESSION_FILE_NAME = "hal.lz";
+const char* DECOMPRESSION_FILE_NAME = "hal_decomp.bmp";
 
 int main(void)
 {
@@ -28,7 +31,7 @@ int main(void)
 	//unsigned char* data = (unsigned char*)str;//文字列を単なる1バイトデータとして扱う
 
 	FILE* file;
-	file = fopen("yuuki.bmp", "rb");
+	file = fopen(FILE_NAME, "rb");
 
 	unsigned int len;
 	fseek(file, 0, SEEK_END);
@@ -99,7 +102,7 @@ int main(void)
 	//}
 
 	// 圧縮データをファイル書き込み
-	file = fopen("yuuki.lz", "wb");
+	file = fopen(COMPRESSION_FILE_NAME, "wb");
 	fwrite(g_lz78, sizeof(LZ78), g_lzcount, file);
 	fclose(file);
 
@@ -115,7 +118,7 @@ int main(void)
 		// 圧縮データをファイル読み込み
 
 		FILE* file;
-		file = fopen("yuuki.lz", "rb");
+		file = fopen(COMPRESSION_FILE_NAME, "rb");
 
 		unsigned int len;
 
@@ -153,7 +156,7 @@ int main(void)
 
 		orgData[c] = 0;
 
-		file = fopen("yuuki_decomp.bmp", "wb");
+		file = fopen(DECOMPRESSION_FILE_NAME, "wb");
 		fwrite(orgData, c, 1, file);
 		fclose(file);
 
