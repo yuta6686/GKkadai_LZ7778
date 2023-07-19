@@ -180,18 +180,19 @@ int main(void)
 	// Yuukitan
 	cout << "yuukitan.bmp" << endl;
 	{
-		// LZ78
+		// LZ78ˆ³k
 		cout << "Start LZ78 Compress" << endl;
 		LZ78Compress((YUUKI_FILE_NAME + BMP_EXTENSION).c_str(),(YUUKI_FILE_NAME+ LZ_EXTENSION).c_str());
 
+		// ƒnƒtƒ}ƒ“ˆ³k
 		cout << "Start Huffman Compress" << endl;
 		HuffmanCompress((YUUKI_FILE_NAME + LZ_EXTENSION).c_str(), (YUUKI_FILE_NAME + LZHUF_EXTENSION).c_str());
 
-		// •¡†
+		// ƒnƒtƒ}ƒ“•¡†
 		cout << "Start Huffman Deompress" << endl;
 		HuffmanDecomp((YUUKI_FILE_NAME + LZHUF_EXTENSION).c_str(), (YUUKI_FILE_NAME + LZ_EXTENSION).c_str());
 
-		// ‚©‚çƒf[ƒ^‚ğ«‘“o˜^	
+		// LZ78•¡†
 		cout << "Start LZ78 Decompress" << endl;
 		LZ78Decompress((YUUKI_FILE_NAME + LZ_EXTENSION).c_str(), (YUUKI_FILE_NAME + DECOMP_EXTENSION).c_str());
 	}
@@ -199,18 +200,19 @@ int main(void)
 	// Hal
 	cout << "hal.bmp" << endl;
 	{
-		// LZ78
+		// LZ78 ˆ³k
 		cout << "Start LZ78 Compress" << endl;
 		LZ78Compress((YUUKI_FILE_NAME + BMP_EXTENSION).c_str(), (YUUKI_FILE_NAME + LZ_EXTENSION).c_str());
 
+		// ƒnƒtƒ}ƒ“ ˆ³k
 		cout << "Start Huffman Compress" << endl;
 		HuffmanCompress((YUUKI_FILE_NAME + LZ_EXTENSION).c_str(), (YUUKI_FILE_NAME + LZHUF_EXTENSION).c_str());
 
-		// •¡†
+		// ƒnƒtƒ}ƒ“ •¡†
 		cout << "Start Huffman Deompress" << endl;
 		HuffmanDecomp((YUUKI_FILE_NAME + LZHUF_EXTENSION).c_str(), (YUUKI_FILE_NAME + LZ_EXTENSION).c_str());
 
-		// ‚©‚çƒf[ƒ^‚ğ«‘“o˜^	
+		// LZ78•¡†
 		cout << "Start LZ78 Decompress" << endl;
 		LZ78Decompress((YUUKI_FILE_NAME + LZ_EXTENSION).c_str(), (YUUKI_FILE_NAME + DECOMP_EXTENSION).c_str());
 	}
