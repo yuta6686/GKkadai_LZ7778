@@ -7,6 +7,8 @@
 #include <iostream>
 
 #include <future>
+#include <Windows.h>
+#include <time.h>
 
 using namespace std;
 
@@ -189,6 +191,8 @@ const string DECOMP_EXTENSION = "_decomp.bmp";
 
 int main(void)
 {
+	clock_t start = clock();
+
 	future yuuki = async(launch::async, []() {
 		Huffman* huff_yuuki = new Huffman();
 		LZ78Class* lz_yuuki = new LZ78Class();
@@ -250,6 +254,10 @@ int main(void)
 
 	yuuki.get();
 	hal.get();
+
+	clock_t end = clock();
+
+	cout << "duration = " << (double)(end - start) / CLOCKS_PER_SEC << "sec." << endl;
 
 	printf("\nEnterƒL[‚ÅI—¹‚µ‚Ü‚·\n");
 	rewind(stdin);
