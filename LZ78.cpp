@@ -6,6 +6,8 @@
 #include <bitset>
 #include <iostream>
 
+#include <future>
+
 using namespace std;
 
 struct CodeInfo
@@ -26,137 +28,159 @@ bool operator>(const TreeNode& node1, const TreeNode& node2)
 	return node1.occurrence > node2.occurrence;
 }
 
-void dfs(CodeInfo* value2code, TreeNode node, int code, int codeSize)
-{
-	if (node.children.empty())
-	{
-		value2code[node.value].code = code;
-		value2code[node.value].codeSize = codeSize;
-	}
-	else {
-		dfs(value2code, node.children[0], code << 1, codeSize + 1);
-		dfs(value2code, node.children[1], (code << 1) + 1, codeSize + 1);
-	}
-}
-
-void createValue2Code(CodeInfo* value2code, const unsigned char* data, unsigned int size)
-{
-	// 各バイト値の発生回数を数える
-	TreeNode nodes[256];
-
-	for (int i = 0; i < 256; i++)
-	{
-		nodes[i].value = i;
-		nodes[i].occurrence = 0;
-	}
-
-	for (int i = 0; i < size; i++)
-	{
-		unsigned char v = data[i];
-		nodes[v].occurrence++;
-	}
-
-	// ハフマン木を作成
-	std::priority_queue<TreeNode, std::vector<TreeNode>, std::greater<TreeNode>> queue;
-	for (unsigned int i = 0; i < 256; i++)
-	{
-		queue.push(nodes[i]);
-	}
-
-	while (queue.size() > 1)
-	{
-		TreeNode n1 = queue.top(); queue.pop();
-		TreeNode n2 = queue.top(); queue.pop();
-
-		TreeNode node;
-		node.occurrence = n1.occurrence + n2.occurrence;
-		node.children.push_back(n1);
-		node.children.push_back(n2);
-
-		queue.push(node);
-	}
-
-	TreeNode root = queue.top();
-
-	// 深さ優先探索でバイト値→符号情報を作成
-	dfs(value2code, root, 0, 0);
-}
-
-class BitStream
-{
+class Huffman {
 public:
-	std::bitset<10000000> bs;
-	unsigned int len = 0;
-	unsigned int pos = 0;
+	Huffman() = default;
+	~Huffman() = default;
 
-	void write(unsigned int v, unsigned int bits)
+
+
+	void dfs(CodeInfo* value2code, TreeNode node, int code, int codeSize)
 	{
-		for (unsigned int i = 0; i < bits; i++)
+		if (node.children.empty())
 		{
-			bs[len++] = ((v >> (bits - i - 1)) & 1);
+			value2code[node.value].code = code;
+			value2code[node.value].codeSize = codeSize;
+		}
+		else {
+			dfs(value2code, node.children[0], code << 1, codeSize + 1);
+			dfs(value2code, node.children[1], (code << 1) + 1, codeSize + 1);
 		}
 	}
-	unsigned int read(int bits)
+
+	void createValue2Code(CodeInfo* value2code, const unsigned char* data, unsigned int size)
 	{
-		unsigned int v = 0;
-		for (int i = 0; i < bits; i++)
+		// 各バイト値の発生回数を数える
+		TreeNode nodes[256];
+
+		for (int i = 0; i < 256; i++)
 		{
-			if (bs[pos++])
+			nodes[i].value = i;
+			nodes[i].occurrence = 0;
+		}
+
+		for (int i = 0; i < size; i++)
+		{
+			unsigned char v = data[i];
+			nodes[v].occurrence++;
+		}
+
+		// ハフマン木を作成
+		std::priority_queue<TreeNode, std::vector<TreeNode>, std::greater<TreeNode>> queue;
+		for (unsigned int i = 0; i < 256; i++)
+		{
+			queue.push(nodes[i]);
+		}
+
+		while (queue.size() > 1)
+		{
+			TreeNode n1 = queue.top(); queue.pop();
+			TreeNode n2 = queue.top(); queue.pop();
+
+			TreeNode node;
+			node.occurrence = n1.occurrence + n2.occurrence;
+			node.children.push_back(n1);
+			node.children.push_back(n2);
+
+			queue.push(node);
+		}
+
+		TreeNode root = queue.top();
+
+		// 深さ優先探索でバイト値→符号情報を作成
+		dfs(value2code, root, 0, 0);
+	}
+
+	class BitStream
+	{
+	public:
+		std::bitset<10000000> bs;
+		unsigned int len = 0;
+		unsigned int pos = 0;
+
+		void write(unsigned int v, unsigned int bits)
+		{
+			for (unsigned int i = 0; i < bits; i++)
 			{
-				v |= 1 << (bits - i - 1);
+				bs[len++] = ((v >> (bits - i - 1)) & 1);
 			}
 		}
-		return v;
-	}
-	unsigned int check(unsigned int bits)
-	{
-		unsigned int v = 0;
-		for (unsigned int i = 0; i < bits; i++)
+		unsigned int read(int bits)
 		{
-			if (bs[pos + i])
+			unsigned int v = 0;
+			for (int i = 0; i < bits; i++)
 			{
-				v |= 1 << (bits - i - 1);
+				if (bs[pos++])
+				{
+					v |= 1 << (bits - i - 1);
+				}
 			}
+			return v;
 		}
-		return v;
-	}
-	bool empty()
+		unsigned int check(unsigned int bits)
+		{
+			unsigned int v = 0;
+			for (unsigned int i = 0; i < bits; i++)
+			{
+				if (bs[pos + i])
+				{
+					v |= 1 << (bits - i - 1);
+				}
+			}
+			return v;
+		}
+		bool empty()
+		{
+			if (len <= pos)
+				return true;
+			else
+				return false;
+		}
+	};
+
+	void compress(BitStream* bs, const unsigned char* data, unsigned int size, const CodeInfo* value2code)
 	{
-		if (len <= pos)
-			return true;
-		else
-			return false;
+		for (unsigned int i = 0; i < size; i++)
+		{
+			unsigned char v = data[i];
+			CodeInfo codeInfo = value2code[v];
+			bs->write(codeInfo.code, codeInfo.codeSize);
+		}
 	}
+public:
+	void HuffmanCompress(const char* comp_file, const char* decomp_file);
+	void HuffmanDecomp(const char* comp_file, const char* decomp_file);
 };
-
-void compress(BitStream* bs, const unsigned char* data, unsigned int size, const CodeInfo* value2code)
-{
-	for (unsigned int i = 0; i < size; i++)
-	{
-		unsigned char v = data[i];
-		CodeInfo codeInfo = value2code[v];
-		bs->write(codeInfo.code, codeInfo.codeSize);
-	}
-}
-
 
 // とりあえず固定長配列で (実用を考えると可変長の必要あり)
 #define MAX_DIC		100000	// 辞書最大数
 #define MAX_LZ78	100000	// 出力データ最大数
 
-struct DIC {				// 辞書 (参照番号は添字+1とする)
-	unsigned int	len;	// データ長
-	unsigned char* data;	// データ先頭 (実体は元のデータ)
-} g_dic[MAX_DIC];
-int	g_dcount = 0;			// 辞書登録数
+class LZ78Class {
+public:
+
+	struct DIC {				// 辞書 (参照番号は添字+1とする)
+		unsigned int	len;	// データ長
+		unsigned char* data;	// データ先頭 (実体は元のデータ)
+	} g_dic[MAX_DIC];
+	int	g_dcount = 0;			// 辞書登録数
 
 #pragma pack(1) // パディング（余分データの除去をする)
-struct LZ78 {				// LZ78コード
-	unsigned int	index;	// 参照番号
-	unsigned char	data;	// データ
-} g_lz78[MAX_LZ78];
+	struct LZ78 {				// LZ78コード
+		unsigned int	index;	// 参照番号
+		unsigned char	data;	// データ
+	} g_lz78[MAX_LZ78];
 #pragma pack()
-int g_lzcount = 0;			// 出力コード数
+	int g_lzcount = 0;			// 出力コード数
+
+public:
+	void LZ78Compress(const char* comp_file, const char* decomp_file);
+
+	void LZ78Decompress(const char* comp_file, const char* decomp_file);
+};
+
+
+
 
 // ファイル名
 const char* YUUKI_FILE_NAME = "yuuki.bmp";						// 圧縮するファイル
@@ -171,51 +195,70 @@ const char* COMPRESSION_LZHUFF_HAL_FILE_NAME = "hal.lzhuh";	// 圧縮したファイル
 const char* DECOMPRESSION_HUFF_HAL_FILE_NAME = "hal.lz";
 const char* DECOMPRESSION_HAL_FILE_NAME = "hal_decomp.bmp";	// 解凍したファイル
 
-void LZ78Compress(const char* comp_file, const char* decomp_file);
-void HuffmanCompress(const char* comp_file, const char* decomp_file);
-void HuffmanDecomp(const char* comp_file, const char* decomp_file);
-void LZ78Decompress(const char* comp_file, const char* decomp_file);
+
 
 int main(void)
 {
-	// Yuukitan
-	cout << "yuukitan.bmp" << endl;
-	{
-		// LZ78
-		cout << "Start LZ78 Compress" << endl;
-		LZ78Compress(YUUKI_FILE_NAME, COMPRESSION_YUUKI_FILE_NAME);
+	future yuuki = async(launch::async, []() {
+		Huffman* huff_yuuki = new Huffman();
+		LZ78Class* lz_yuuki = new LZ78Class();
 
-		cout << "Start Huffman Compress" << endl;
-		HuffmanCompress(COMPRESSION_YUUKI_FILE_NAME, COMPRESSION_LZHUFF_YUUKI_FILE_NAME);
+		// Yuukitan
+		cout << "yuukitan.bmp" << endl;
+		{
+			const string yuuki_str = "【yuukitan.bmp】";
 
-		// 複号
-		cout << "Start Huffman Deompress" << endl;
-		HuffmanDecomp(COMPRESSION_LZHUFF_YUUKI_FILE_NAME, DECOMPRESSION_HUFF_YUUKI_FILE_NAME);
+			// LZ78
+			cout << yuuki_str << "Start LZ78 Compress" << endl;
+			lz_yuuki->LZ78Compress(YUUKI_FILE_NAME, COMPRESSION_YUUKI_FILE_NAME);
 
-		// からデータを辞書登録	
-		cout << "Start LZ78 Decompress" << endl;
-		LZ78Decompress(DECOMPRESSION_HUFF_YUUKI_FILE_NAME, DECOMPRESSION_YUUKI_FILE_NAME);
-	}
+			cout << yuuki_str << "Start Huffman Compress" << endl;
+			huff_yuuki->HuffmanCompress(COMPRESSION_YUUKI_FILE_NAME, COMPRESSION_LZHUFF_YUUKI_FILE_NAME);
 
-	// Hal
-	cout << "hal.bmp" << endl;
-	{
-		// LZ78
-		cout << "Start LZ78 Compress" << endl;
-		LZ78Compress(HAL_FILE_NAME, COMPRESSION_HAL_FILE_NAME);
+			// 複号
+			cout << yuuki_str << "Start Huffman Deompress" << endl;
+			huff_yuuki->HuffmanDecomp(COMPRESSION_LZHUFF_YUUKI_FILE_NAME, DECOMPRESSION_HUFF_YUUKI_FILE_NAME);
 
-		cout << "Start Huffman Compress" << endl;
-		HuffmanCompress(COMPRESSION_HAL_FILE_NAME, COMPRESSION_LZHUFF_HAL_FILE_NAME);
+			// からデータを辞書登録	
+			cout << yuuki_str << "Start LZ78 Decompress" << endl;
+			lz_yuuki->LZ78Decompress(DECOMPRESSION_HUFF_YUUKI_FILE_NAME, DECOMPRESSION_YUUKI_FILE_NAME);
+		}
 
-		// 複号
-		cout << "Start Huffman Deompress" << endl;
-		HuffmanDecomp(COMPRESSION_LZHUFF_HAL_FILE_NAME, DECOMPRESSION_HUFF_HAL_FILE_NAME);
+		delete huff_yuuki;
+		delete lz_yuuki;
+		});
 
-		// からデータを辞書登録	
-		cout << "Start LZ78 Decompress" << endl;
-		LZ78Decompress(DECOMPRESSION_HUFF_HAL_FILE_NAME, DECOMPRESSION_HAL_FILE_NAME);
-	}
+	future hal = async(launch::async, []() {
 
+		Huffman* huff_hal = new Huffman();
+		LZ78Class* lz_hal = new LZ78Class();
+
+		// Hal
+		cout << "hal.bmp" << endl;
+		{
+			const string hal_str = "【hal.bmp】";
+			// LZ78
+			cout << hal_str << "Start LZ78 Compress" << endl;
+			lz_hal->LZ78Compress(HAL_FILE_NAME, COMPRESSION_HAL_FILE_NAME);
+
+			cout << hal_str << "Start Huffman Compress" << endl;
+			huff_hal->HuffmanCompress(COMPRESSION_HAL_FILE_NAME, COMPRESSION_LZHUFF_HAL_FILE_NAME);
+
+			// 複号
+			cout << hal_str << "Start Huffman Deompress" << endl;
+			huff_hal->HuffmanDecomp(COMPRESSION_LZHUFF_HAL_FILE_NAME, DECOMPRESSION_HUFF_HAL_FILE_NAME);
+
+			// からデータを辞書登録	
+			cout << hal_str << "Start LZ78 Decompress" << endl;
+			lz_hal->LZ78Decompress(DECOMPRESSION_HUFF_HAL_FILE_NAME, DECOMPRESSION_HAL_FILE_NAME);
+		}
+
+		delete huff_hal;
+		delete lz_hal;
+		});
+
+	yuuki.get();
+	hal.get();
 
 	printf("\nEnterキーで終了します\n");
 	rewind(stdin);
@@ -226,7 +269,7 @@ int main(void)
 }
 
 
-void LZ78Compress(const char* comp_file, const char* decomp_file)
+void LZ78Class::LZ78Compress(const char* comp_file, const char* decomp_file)
 {
 	FILE* file;
 	file = fopen(comp_file, "rb");
@@ -292,7 +335,7 @@ void LZ78Compress(const char* comp_file, const char* decomp_file)
 	fclose(file);
 }
 
-void HuffmanCompress(const char* comp_file, const char* decomp_file)
+void Huffman::HuffmanCompress(const char* comp_file, const char* decomp_file)
 {
 	FILE* file;
 	file = fopen(comp_file, "rb");
@@ -332,7 +375,7 @@ void HuffmanCompress(const char* comp_file, const char* decomp_file)
 	delete bs;
 }
 
-void HuffmanDecomp(const char* comp_file,const char* decomp_file)
+void Huffman::HuffmanDecomp(const char* comp_file,const char* decomp_file)
 {
 	FILE* file;
 	file = fopen(comp_file, "rb");
@@ -394,7 +437,7 @@ void HuffmanDecomp(const char* comp_file,const char* decomp_file)
 	delete bs;
 }
 
-void LZ78Decompress(const char* comp_file, const char* decomp_file)
+void LZ78Class::LZ78Decompress(const char* comp_file, const char* decomp_file)
 {
 
 	// 圧縮データをファイル読み込み
