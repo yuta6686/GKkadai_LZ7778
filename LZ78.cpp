@@ -5,6 +5,8 @@
 #include <queue>
 #include <bitset>
 #include <iostream>
+#include <Windows.h>
+#include <time.h>
 
 using namespace std;
 
@@ -173,6 +175,8 @@ void LZ78Decompress(const char* comp_file, const char* decomp_file);
 
 int main(void)
 {
+	clock_t start = clock();
+
 	// Yuukitan
 	cout << "yuukitan.bmp" << endl;
 	{
@@ -211,6 +215,9 @@ int main(void)
 		LZ78Decompress((YUUKI_FILE_NAME + LZ_EXTENSION).c_str(), (YUUKI_FILE_NAME + DECOMP_EXTENSION).c_str());
 	}
 
+	clock_t end = clock();
+
+	cout << "duration = " << (double)(end - start) / CLOCKS_PER_SEC << "sec." << endl;
 
 	printf("\nEnterƒL[‚ÅI—¹‚µ‚Ü‚·\n");
 	rewind(stdin);
