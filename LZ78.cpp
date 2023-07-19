@@ -206,14 +206,15 @@ int main(void)
 			cout << yuuki_str  << "Start LZ78 Compress" << endl;
 			lz_yuuki->LZ78Compress((YUUKI_FILE_NAME + BMP_EXTENSION).c_str(), (YUUKI_FILE_NAME + LZ_EXTENSION).c_str());
 
+			// ハフマン
 			cout << yuuki_str << "Start Huffman Compress" << endl;
 			huff_yuuki->HuffmanCompress((YUUKI_FILE_NAME + LZ_EXTENSION).c_str(), (YUUKI_FILE_NAME + LZHUF_EXTENSION).c_str());
 
-			// 複号
+			// ハフマン複号
 			cout << yuuki_str << "Start Huffman Decompress" << endl;
 			huff_yuuki->HuffmanDecomp((YUUKI_FILE_NAME + LZHUF_EXTENSION).c_str(), (YUUKI_FILE_NAME + LZ_EXTENSION).c_str());
 
-			// からデータを辞書登録	
+			// LZ78 複号
 			cout << yuuki_str << "Start LZ78 Decompress" << endl;
 			lz_yuuki->LZ78Decompress((YUUKI_FILE_NAME + LZ_EXTENSION).c_str(), (YUUKI_FILE_NAME + DECOMP_EXTENSION).c_str());
 	}
@@ -232,18 +233,19 @@ int main(void)
 		{
 			const string hal_str = "【hal.bmp】";
 
-			// LZ78
+			// LZ78 圧縮
 			cout << hal_str << "Start LZ78 Compress" << endl;
 			lz_hal->LZ78Compress((YUUKI_FILE_NAME + BMP_EXTENSION).c_str(), (YUUKI_FILE_NAME + LZ_EXTENSION).c_str());
 
+			// ハフマン圧縮
 			cout << hal_str << "Start Huffman Compress" << endl;
 			huff_hal->HuffmanCompress((YUUKI_FILE_NAME + LZ_EXTENSION).c_str(), (YUUKI_FILE_NAME + LZHUF_EXTENSION).c_str());
 
-			// 複号
+			// ハフマン複号
 			cout << hal_str << "Start Huffman Decompress" << endl;
 			huff_hal->HuffmanDecomp((YUUKI_FILE_NAME + LZHUF_EXTENSION).c_str(), (YUUKI_FILE_NAME + LZ_EXTENSION).c_str());
 
-			// からデータを辞書登録	
+			// LZ78複号
 			cout << hal_str << "Start LZ78 Decompress" << endl;
 			lz_hal->LZ78Decompress((YUUKI_FILE_NAME + LZ_EXTENSION).c_str(), (YUUKI_FILE_NAME + DECOMP_EXTENSION).c_str());
 		}
