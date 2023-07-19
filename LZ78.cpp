@@ -1,4 +1,4 @@
-// LZ78符号化
+// LZ78符号化とハフマン
 #include <stdio.h>			// printf で必要
 #include <string.h>			// memcmp, strlen で必要
 
@@ -81,8 +81,6 @@ void createValue2Code(CodeInfo* value2code, const unsigned char* data, unsigned 
 	// 深さ優先探索でバイト値→符号情報を作成
 	dfs(value2code, root, 0, 0);
 }
-
-
 
 class BitStream
 {
@@ -181,6 +179,7 @@ void LZ78Decompress(const char* comp_file, const char* decomp_file);
 int main(void)
 {
 	// Yuukitan
+	cout << "yuukitan.bmp" << endl;
 	{
 		// LZ78
 		cout << "Start LZ78 Compress" << endl;
@@ -199,6 +198,7 @@ int main(void)
 	}
 
 	// Hal
+	cout << "hal.bmp" << endl;
 	{
 		// LZ78
 		cout << "Start LZ78 Compress" << endl;
