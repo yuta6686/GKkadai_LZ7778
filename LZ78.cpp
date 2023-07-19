@@ -235,19 +235,19 @@ int main(void)
 
 			// LZ78 圧縮
 			cout << hal_str << "Start LZ78 Compress" << endl;
-			lz_hal->LZ78Compress((YUUKI_FILE_NAME + BMP_EXTENSION).c_str(), (YUUKI_FILE_NAME + LZ_EXTENSION).c_str());
+			lz_hal->LZ78Compress((HAL_FILE_NAME + BMP_EXTENSION).c_str(), (HAL_FILE_NAME + LZ_EXTENSION).c_str());
 
 			// ハフマン圧縮
 			cout << hal_str << "Start Huffman Compress" << endl;
-			huff_hal->HuffmanCompress((YUUKI_FILE_NAME + LZ_EXTENSION).c_str(), (YUUKI_FILE_NAME + LZHUF_EXTENSION).c_str());
+			huff_hal->HuffmanCompress((HAL_FILE_NAME + LZ_EXTENSION).c_str(), (HAL_FILE_NAME + LZHUF_EXTENSION).c_str());
 
 			// ハフマン複号
 			cout << hal_str << "Start Huffman Decompress" << endl;
-			huff_hal->HuffmanDecomp((YUUKI_FILE_NAME + LZHUF_EXTENSION).c_str(), (YUUKI_FILE_NAME + LZ_EXTENSION).c_str());
+			huff_hal->HuffmanDecomp((HAL_FILE_NAME + LZHUF_EXTENSION).c_str(), (HAL_FILE_NAME + LZ_EXTENSION).c_str());
 
 			// LZ78複号
 			cout << hal_str << "Start LZ78 Decompress" << endl;
-			lz_hal->LZ78Decompress((YUUKI_FILE_NAME + LZ_EXTENSION).c_str(), (YUUKI_FILE_NAME + DECOMP_EXTENSION).c_str());
+			lz_hal->LZ78Decompress((HAL_FILE_NAME + LZ_EXTENSION).c_str(), (HAL_FILE_NAME + DECOMP_EXTENSION).c_str());
 		}
 
 		delete huff_hal;
